@@ -16,11 +16,13 @@ Provides essential functionality for managing products, orders, customers, payme
 * [Technologies](#technologies)
 * [Prerequisites](#prerequisites)
 * [Project Structure](#project-structure)
+* [Modules](#modules)
 * [Profiles & Configuration](#profiles--configuration)
 * [Run & Build](#run--build)
 * [Testing](#testing)
 * [Security & Health](#security--health)
 * [API Documentation](#api-documentation)
+* [License](#license)
 * [Contact](#contact)
 
 ---
@@ -41,7 +43,6 @@ Tawatch Backend aims to provide a clean, maintainable, and production-ready back
 * **Role-based Access Control:** Admin, Customer, Manager roles with specific permissions
 
 **Supporting Features:**
-
 * Supports Docker, Actuator health monitoring, and OpenAPI documentation for easy integration.
 
 ---
@@ -92,30 +93,26 @@ Ensure you have the following installed:
 ## Project Structure
 
 ```plaintext
-tawatch-backend
-├── README.md                                       # Project-level README
-├── tawatch-starter
-│   ├── README.md                                   # Module-level README
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java/vn/fernirx/tawatch/starter
-│   │   │   │   └── TawatchApplication.java         # Entry point of the module
-│   │   │   └── resources
-│   │   │       ├── application.yaml                # Profile selector (switches between profile files)
-│   │   │       ├── application.example.yaml        # Example configuration file
-│   │   │       └── db/migration/
-│   │   │           └── V1__init_schema.sql         # Initial Flyway migration script
-│   │   └── test
-│   │       └── java/vn/fernirx/tawatch/starter
-│   │           └── TawatchApplicationTests.java    # Unit & integration tests for the module
-├── Dockerfile                                      # Docker image build configuration
-├── docker-compose.yaml                             # Docker Compose orchestration file
-├── .env.example                                    # Example environment variables (do not commit secrets)
-├── .gitignore                                      # Git ignore rules
-├── .dockerignore                                   # Docker ignore rules
-└── pom.xml                                         # Maven project descriptor (root POM) 
+tawatch-backend/
+├── tawatch-starter/        # Main Spring Boot starter module (entry point)
+│   └── README.md           # Module-level documentation
+├── README.md               # Project-level documentation
+├── Dockerfile              # Docker image build configuration
+├── docker-compose.yml     # Docker Compose orchestration file
+├── .env.example            # Example environment variables (do not commit secrets)
+├── .gitignore              # Git ignore rules
+├── .dockerignore           # Docker ignore rules
+└── pom.xml                 # Maven project descriptor (root POM)
 ```
 
+---
+
+## Modules
+
+| Module             | Description                                                                                |
+|--------------------|--------------------------------------------------------------------------------------------|
+| `tawatch-starter`  | Main application entry point, contains the `@SpringBootApplication` and base configuration |
+| *(future modules)* | Feature modules (e.g., `tawatch-core`, `tawatch-domain`, etc.) to be added later           |
 
 ---
 
@@ -123,10 +120,12 @@ tawatch-backend
 
 The project uses **Spring profiles** to manage environment-specific settings.
 
-- `local` — for local development (copy from `application.example.yaml` → `application-local.yaml`)
-- `docker` — for Dockerized environments (copy from `application.example.yaml` → `application-docker.yaml`)
+Create environment-specific config files from the example:
 
-The base `application.yaml` only contains the active profile selector.
+- `local` — for local development (`application.example.yml` → `application-local.yml`)
+- `docker` — for Dockerized environments (`application.example.yml` → `application-docker.yml`)
+
+The base `application.yml` only contains the active profile selector.
 
 Each profile supports variable substitution from the `.env.example` file  
 (for example, `DB_HOST`, `DB_PORT`, `SERVER_PORT`, etc.).  
@@ -151,8 +150,7 @@ Copy example configuration files to create your local environment setup:
 
 ```bash
 # Copy example application config
-cp src/main/resources/application.example.yaml src/main/resources/application-local.yaml
-
+cp tawatch-starter/src/main/resources/application.example.yml tawatch-starter/src/main/resources/application-local.yml
 # Copy environment variables template
 cp .env.example .env
 ```
@@ -167,8 +165,8 @@ Edit these files with your local or CI/CD environment settings.
 # Build the project
 mvn clean install
 
-# Run with default profile (local)
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+# Run application (starter module)
+mvn spring-boot:run -pl tawatch-starter -Dspring-boot.run.profiles=local
 ```
 
 The API will be available at: [http://localhost:8080](http://localhost:8080) (default `{HOST}:{PORT}`).
@@ -215,7 +213,7 @@ docker compose up
 Additional helper scripts are provided for convenience:
 
 | Script   | Description                            |
-| -------- |----------------------------------------|
+|----------|----------------------------------------|
 | `build`  | Build images                           |
 | `start`  | Start containers (builds if needed)    |
 | `stop`   | Stop and remove containers             |
@@ -229,7 +227,6 @@ Once the application is running:
 
 * **Swagger UI:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) (default `{HOST}:{PORT}`)
 * **Health Check:** [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) (default `{HOST}:{PORT}`)
-
 
 ---
 
@@ -277,12 +274,16 @@ Sensitive endpoints can be protected under restricted access for safety.
 
 Interactive API documentation is available via Swagger UI:
 
-
-
-* **Swagger UI:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) (default `{HOST}:{PORT}`)
-* **OpenAPI JSON/YAML:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs) (default `{HOST}:{PORT}`)
+* **Swagger UI:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+* **OpenAPI JSON/YAML:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 OpenAPI specification is automatically generated and updated at runtime.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
@@ -290,6 +291,6 @@ OpenAPI specification is automatically generated and updated at runtime.
 
 For questions, issues, or contributions:
 
-* **Author:** Phạm Huỳnh Thanh HƯng
+* **Author:** Phạm Huỳnh Thanh Hưng
 * **Email:** [anhtuhungdeveloper@gmail.com](mailto:anhtuhungdeveloper@gmail.com)
 * **GitHub:** [github.com/Fernirx](https://github.com/Fernirx)
