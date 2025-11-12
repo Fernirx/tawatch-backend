@@ -149,9 +149,17 @@ cd tawatch-backend
 Copy example configuration files to create your local environment setup:
 
 ```bash
-# Copy example application config
-cp tawatch-starter/src/main/resources/application.example.yml tawatch-starter/src/main/resources/application-local.yml
-# Copy environment variables template
+# For local development:
+# Copy example application config to create your local profile
+cp tawatch-starter/src/main/resources/application.example.yml \
+   tawatch-starter/src/main/resources/application-local.yml
+
+# For Dockerized environments:
+# Copy example application config to create Docker profile
+cp tawatch-starter/src/main/resources/application.example.yml \
+   tawatch-starter/src/main/resources/application-docker.yml
+
+# Only for Docker, copy environment variables template
 cp .env.example .env
 ```
 
