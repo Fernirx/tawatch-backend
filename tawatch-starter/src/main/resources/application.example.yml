@@ -10,15 +10,7 @@
 # === Spring Application ===
 spring:
   application:
-    name: ${APP_NAME:tawatch}       # App name (default: tawatch)
-
-  # Active Spring profile.
-  # Change this to match the environment-specific file:
-  #   application-local.yaml → local
-  #   application-docker.yaml → docker
-  config:
-    activate:
-      on-profile: local
+    name: ${APP_NAME:tawatch}       # App name (default: tawatch)c
 
 # === Server Configuration ===
 server:
