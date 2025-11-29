@@ -139,16 +139,18 @@ SERVER_CONTEXT_PATH=/api/myapp
 The application configuration files support variable substitution from the `.env` file. For example:
 
 ```yaml
+spring:
+  application:
+    name: ${APP_NAME:tawatch}
+
 server:
   port: ${SERVER_PORT:8080}
   servlet:
     context-path: ${SERVER_CONTEXT_PATH:/api/tawatch}
-
-spring:
-  datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch}
-    username: ${DB_USERNAME:tawatch_user}
-    password: ${DB_PASSWORD:tawatch_pass}
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 ```
 
 This allows you to change settings without modifying the configuration files directly.
