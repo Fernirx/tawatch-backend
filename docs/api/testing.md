@@ -209,14 +209,12 @@ http GET localhost:8080/api/tawatch/products \
 
 **POST request:**
 ```bash
-http POST localhost:8080/api/tawatch/products \
-  Authorization:"Bearer <token>" \
-  Content-Type:application/json \
-  <<<'{
-    "name": "Omega Speedmaster",
-    "price": 6500.00,
-    "category": "LUXURY"
-  }'
+echo '{
+  "name": "Omega Speedmaster",
+  "price": 6500.00,
+  "category": "LUXURY"
+}' | http POST localhost:8080/api/tawatch/products \
+  Authorization:"Bearer <token>"
 ```
 
 HTTPie automatically:
