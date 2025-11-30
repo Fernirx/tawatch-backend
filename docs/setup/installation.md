@@ -313,7 +313,7 @@ If you see "port already in use" error:
 - Ensure database exists
 
 **For Docker:**
-- Check container logs: `docker compose logs db`
+- Check container logs: `docker compose logs mysql`
 - Verify database container status: `docker compose ps`
 - Access database directly: `docker compose exec -it mysql mysql -u root -p`
 
