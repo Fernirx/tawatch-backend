@@ -1,23 +1,146 @@
-# ==========================================
+# ========================================================
 # Tawatch Backend Configuration (Template)
-# ==========================================
-# Example configuration file.
-# Copy this file to create environment-specific configs:
-#   - application-local.yaml  (local development)
-#   - application-docker.yaml (docker environment)
-# Do NOT commit real environment files with secrets.
+# ========================================================
+# This is a template configuration file. Use it as a reference
+# to create environment-specific configuration files.
+#
+# USAGE:
+# 1. Copy this file to create environment-specific configurations:
+#    - application-local.yaml       (local development)
+#    - application-docker.yaml      (docker environment)
+#
+# 2. Do NOT commit real environment files with secrets to version control.
+# 3. Use environment variables or secure secret managers for sensitive data.
+# ========================================================
 
-# === Spring Application ===
+# ========================================================
+# SPRING APPLICATION CONFIGURATION
+# ========================================================
 spring:
+  # --- Application Metadata ---
   application:
-    name: ${APP_NAME:tawatch}       # App name (default: tawatch)c
+    # Used in logs, metrics, and service discovery
+    name: ${APP_NAME:tawatch}       # Application name
 
-# === Server Configuration ===
+  # ========================================================
+  # DATABASE CONFIGURATION (MySQL)
+  # ========================================================
+  datasource:
+    # Database connection URL with environment variable support
+    # Format: jdbc:mysql://host:port/database
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch_db}
+
+    # Database credentials (use environment variables in production)
+    username: ${DB_USERNAME:root}          # Database username
+    password: ${DB_PASSWORD:password}      # Database password
+
+    # JDBC driver class for MySQL
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # Hikari Connection Pool Advanced Properties
+    hikari:
+      data-source-properties:
+        # Timezone configuration for database connections
+        serverTimezone: ${DB_TIMEZONE:Asia/Ho_Chi_Minh}
+
+        # SSL/TLS configuration for database connection
+        useSSL: ${DB_USE_SSL:false}        # Enable/disable SSL encryption
+
+        # Allow retrieving public key for authentication
+        allowPublicKeyRetrieval: ${DB_ALLOW_PUBLIC_KEY_RETRIEVAL:true}
+
+  # ========================================================
+  # JPA / HIBERNATE CONFIGURATION
+  # ========================================================
+  jpa:
+    # Schema generation strategy:
+    # - validate:    Validate schema, make no changes (recommended for production and Flyway)
+    # - update:      Update the schema
+    # - create:      Create the schema, destroying previous data
+    # - create-drop: Create then drop the schema when SessionFactory closes
+    # - none:        Disable DDL handling
+    hibernate:
+      ddl-auto: validate
+
+    # Enable SQL query logging to console (disable in production)
+    show-sql: ${JPA_SHOW_SQL:true}
+
+    # Hibernate-specific properties
+    properties:
+      hibernate:
+        # Format SQL for better readability in logs
+        format_sql: true
+
+        # SQL dialect for MySQL 8
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQL8Dialect}
+
+        # Add comments to generated SQL for debugging
+        use_sql_comments: ${HIBERNATE_SQL_COMMENTS:true}
+
+        # JDBC batch processing configuration
+        jdbc:
+          batch_size: ${HIBERNATE_BATCH_SIZE:20}           # Number of statements per batch
+          order_inserts: ${HIBERNATE_ORDER_INSERTS:true}   # Optimize insert ordering
+          order_updates: ${HIBERNATE_ORDER_UPDATES:true}   # Optimize update ordering
+
+  # ========================================================
+  # FLYWAY DATABASE MIGRATION CONFIGURATION
+  # ========================================================
+  flyway:
+    enabled: true                           # Enable Flyway database migrations
+
+    # Create baseline for existing databases (when first introducing Flyway)
+    baseline-on-migrate: true
+
+    # Location of migration scripts (classpath directory)
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+
+    # Validate migration checksums before applying migrations
+    validate-on-migrate: true
+
+    # Disallow out-of-order migrations for safety
+    out-of-order: false
+
+    # Disable clean command to prevent accidental data loss
+    clean-disabled: true
+
+# ========================================================
+# SERVER CONFIGURATION
+# ========================================================
 server:
-  port: ${SERVER_PORT:8080}        # HTTP server port (default: 8080)
+  # HTTP server port (override with SERVER_PORT environment variable)
+  port: ${SERVER_PORT:8080}
+
   servlet:
-    context-path: ${SERVER_CONTEXT_PATH:/api/tawatch}  # Base path for API (default: /api/tawatch)
+    # Base context path for all API endpoints
+    context-path: ${SERVER_CONTEXT_PATH:/api/tawatch}
+
+    # Character encoding configuration
     encoding:
-      charset: UTF-8               # Encoding charset
-      enabled: true                # Enable encoding
-      force: true                  # Force UTF-8 encoding
+      charset: UTF-8               # Character encoding for requests/responses
+      enabled: true                # Enable encoding filter
+      force: true                  # Force encoding even if header specifies different
+
+# ========================================================
+# LOGGING CONFIGURATION
+# ========================================================
+logging:
+  level:
+    # Root logger level (affects all logs unless overridden)
+    root: INFO
+
+    # Application-specific logging (package: vn.fernirx.tawatch)
+    vn.fernirx.tawatch: ${LOG_APP_LEVEL:DEBUG}
+
+    # Spring Web logging level
+    org.springframework.web: ${LOG_SPRING_WEB:DEBUG}
+
+    # Hibernate SQL logging - shows executed SQL statements
+    org.hibernate.SQL: ${LOG_HIBERNATE_SQL:DEBUG}
+
+    # Hibernate parameter binding logging - shows query parameter values
+    # WARNING: Setting to TRACE may expose sensitive data in logs
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_HIBERNATE_BIND:TRACE}
+
+    # Flyway migration logging
+    org.flywaydb: ${LOG_FLYWAY:DEBUG}
