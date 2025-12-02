@@ -17,6 +17,35 @@ services:
       # === Server Configuration ===
       SERVER_CONTEXT_PATH: ${SERVER_CONTEXT_PATH}
 
+      # === Database Configuration ===
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_TIMEZONE: ${DB_TIMEZONE}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DB_ALLOW_PUBLIC_KEY_RETRIEVAL: ${DB_ALLOW_PUBLIC_KEY_RETRIEVAL}
+
+      # === JPA / Hibernate Settings ===
+      JPA_SHOW_SQL: ${JPA_SHOW_SQL}
+      HIBERNATE_DIALECT: ${HIBERNATE_DIALECT}
+      HIBERNATE_SQL_COMMENTS: ${HIBERNATE_SQL_COMMENTS}
+      HIBERNATE_BATCH_SIZE: ${HIBERNATE_BATCH_SIZE}
+      HIBERNATE_ORDER_INSERTS: ${HIBERNATE_ORDER_INSERTS}
+      HIBERNATE_ORDER_UPDATES: ${HIBERNATE_ORDER_UPDATES}
+
+      # === Flyway Migration Settings ===
+      FLYWAY_LOCATIONS: ${FLYWAY_LOCATIONS}
+
+      # === Logging Configuration ===
+      LOG_ROOT: ${LOG_ROOT}
+      LOG_APP_LEVEL: ${LOG_APP_LEVEL}
+      LOG_SPRING_WEB: ${LOG_SPRING_WEB}
+      LOG_HIBERNATE_SQL: ${LOG_HIBERNATE_SQL}
+      LOG_HIBERNATE_BIND: ${LOG_HIBERNATE_BIND}
+      LOG_FLYWAY: ${LOG_FLYWAY}
+
     networks:
       - tawatch-net
 
