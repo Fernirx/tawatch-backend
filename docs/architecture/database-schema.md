@@ -15,6 +15,38 @@ The Tawatch database (`tawatch_db`) is designed to support a complete e-commerce
 
 ---
 
+## Schema Management with Flyway
+
+The Tawatch database schema is version-controlled using **Flyway**. All schema changes are managed through SQL migration scripts.
+
+### Migration Scripts Location
+
+```
+tawatch-starter/src/main/resources/db/migration/
+└── V1__init_schema.sql    # Complete initial schema (all tables below)
+```
+
+### How Migrations Work
+
+1. **Automatic Execution** - Flyway runs on application startup
+2. **Version Control** - Each migration has a version number (V1, V2, V3, etc.)
+3. **One-Time Application** - Each migration runs only once
+4. **Tracking** - Applied migrations are recorded in `flyway_schema_history` table
+
+### Creating Schema Changes
+
+**Never modify the database schema manually.** Always create a new migration:
+
+```sql
+-- Example: V2__add_product_ratings.sql
+ALTER TABLE products ADD COLUMN average_rating DECIMAL(3,2) DEFAULT 0.00;
+CREATE INDEX idx_products_rating ON products(average_rating);
+```
+
+For detailed Flyway workflow and best practices, see [Development Guide](../development/development-guide.md#database-migrations).
+
+---
+
 ## Database Structure
 
 The schema is organized into six logical modules:
