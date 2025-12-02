@@ -15,7 +15,7 @@ The `tawatch-starter` module is responsible for:
 
 * **Application Bootstrap** – Starts the backend via `@SpringBootApplication`.
 * **Base Configuration** – Defines the active profile and common settings.
-* **Database Migrations** – Includes initial Flyway scripts.
+* **Database Schema Management** – Manages database schema versioning with Flyway migrations.
 * **Integration Testing** – Ensures Spring context loads correctly.
 * **Multi-Module Orchestration** – Integrates feature modules in the parent project.
 
@@ -74,8 +74,58 @@ Main class annotated with `@SpringBootApplication`. Responsibilities:
 
 ### `db/migration/V1__init_schema.sql`
 
-* Flyway migration script for initializing the database schema.
-* Ensures consistent database setup across environments.
+**Flyway Database Migration**
+
+This module uses **Flyway** for automated database schema versioning and migration management.
+
+**Key Features:**
+* **Version Control** – Each migration has a unique version number (V1, V2, V3, etc.)
+* **Automatic Execution** – Migrations run automatically on application startup
+* **Idempotent** – Each migration runs only once
+* **Checksum Validation** – Ensures applied migrations haven't been modified
+
+**Migration Location:**
+```
+src/main/resources/db/migration/
+└── V1__init_schema.sql    # Complete initial database schema
+```
+
+**Flyway Configuration:**
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate    # Hibernate validates schema, doesn't auto-create tables
+    show-sql: ${JPA_SHOW_SQL:false}
+
+  flyway:
+    enabled: true           # Flyway enabled by default
+    baseline-on-migrate: true
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true    # Prevents accidental data loss
+```
+
+For complete configuration reference, see [`application.example.yml`](src/main/resources/application.example.yml).
+
+**Adding New Migrations:**
+
+To add a new schema change, create a new migration file:
+```bash
+# Example: Adding a new table
+touch src/main/resources/db/migration/V2__add_user_preferences_table.sql
+```
+
+Follow the naming convention: `V{version}__{description}.sql`
+
+For detailed migration workflow and best practices, see [Development Guide](../docs/development/development-guide.md#database-migrations).
 
 ---
 
@@ -84,7 +134,11 @@ Main class annotated with `@SpringBootApplication`. Responsibilities:
 This module includes minimal core dependencies:
 
 * **spring-boot-starter-web** – REST APIs and embedded Tomcat.
+* **spring-boot-starter-data-jpa** – JPA/Hibernate for database access.
 * **spring-boot-starter-test** – JUnit, Spring Test, Mockito.
+* **flyway-core** – Database migration management.
+* **flyway-mysql** – Flyway MySQL driver support.
+* **mysql-connector-j** – MySQL JDBC driver.
 
 Business logic dependencies are added via feature modules in the parent project.
 
