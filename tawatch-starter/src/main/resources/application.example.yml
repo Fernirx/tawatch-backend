@@ -63,7 +63,7 @@ spring:
       ddl-auto: validate
 
     # Enable SQL query logging to console (disable in production)
-    show-sql: ${JPA_SHOW_SQL:true}
+    show-sql: ${JPA_SHOW_SQL:false}
 
     # Hibernate-specific properties
     properties:
@@ -127,7 +127,7 @@ server:
 logging:
   level:
     # Root logger level (affects all logs unless overridden)
-    root: INFO
+    root: ${LOG_ROOT:INFO}
 
     # Application-specific logging (package: vn.fernirx.tawatch)
     vn.fernirx.tawatch: ${LOG_APP_LEVEL:DEBUG}
