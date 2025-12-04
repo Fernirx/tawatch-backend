@@ -3,7 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: tawatch-backend
     container_name: ${APP_NAME}
+    depends_on:
+      mysql:
+        condition: service_healthy
     ports:
       - "${HOST_PORT}:${SERVER_PORT}"
     environment:
@@ -48,6 +52,32 @@ services:
 
     networks:
       - tawatch-net
+
+  mysql:
+    image: mysql:8.0.35
+    container_name: tawatch-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT}:3306"
+    volumes:
+      - tawatch_mysql_data:/var/lib/mysql
+    networks:
+      - tawatch-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  tawatch_mysql_data:
+    name: tawatch_mysql_data
 
 networks:
   tawatch-net:

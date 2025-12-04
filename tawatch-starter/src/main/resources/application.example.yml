@@ -31,7 +31,7 @@ spring:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch_db}
 
     # Database credentials (use environment variables in production)
-    username: ${DB_USERNAME:root}          # Database username
+    username: ${DB_USERNAME:tawatch_user}  # Database username
     password: ${DB_PASSWORD:password}      # Database password
 
     # JDBC driver class for MySQL
