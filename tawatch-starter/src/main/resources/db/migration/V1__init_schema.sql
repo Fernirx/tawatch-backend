@@ -1012,16 +1012,17 @@ CREATE TABLE IF NOT EXISTS `tawatch_db`.`orders` (
     - "REFUNDED" = Đơn hàng đã hoàn tiền sau khi bị hủy hoặc trả hàng',
   `payment_status` ENUM('UNPAID', 'PENDING', 'PROCESSING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'UNPAID' COMMENT 'Trạng thái thanh toán của đơn hàng:
     - "UNPAID" = Chưa thanh toán (áp dụng cho đơn COD - thanh toán khi nhận hàng)
-    - "PENDING" = Đang chờ thanh toán online (đã tạo link thanh toán, chờ khách scan QR)
+    - "PENDING" = Đang chờ thanh toán online
     - "PROCESSING" = Đang xử lý giao dịch thanh toán (đang verify với cổng thanh toán)
     - "PAID" = Đã thanh toán thành công, hệ thống xác nhận nhận được tiền
     - "FAILED" = Thanh toán thất bại (lỗi giao dịch, bị từ chối, hoặc không đủ số dư)
     - "REFUNDED" = Đơn hàng đã được hoàn tiền sau khi hủy hoặc trả hàng
     - "CANCELLED" = Giao dịch thanh toán đã bị hủy bởi khách hàng hoặc hệ thống
     - "EXPIRED" = Hết hạn thanh toán (quá thời gian cho phép)',
-  `payment_method` ENUM('MOMO', 'COD') NOT NULL COMMENT 'Phương thức thanh toán mà khách hàng sử dụng:
-    - "MOMO" = Thanh toán trực tuyến qua ví điện tử MoMo
-    - "COD" = Thanh toán khi nhận hàng (Cash On Delivery)',
+  `payment_method` ENUM('VNPAY', 'ZALOPAY', 'COD') NOT NULL COMMENT 'Phương thức thanh toán mà khách hàng sử dụng:
+    - "VNPAY" = Thanh toán trực tuyến qua VNPay
+    - "ZALOPAY" = Thanh toán qua ZaloPay
+    - "COD" = Thanh toán khi nhận hàng',
   -- Thông tin giao hàng
   `recipient_name` VARCHAR(200) NOT NULL COMMENT 'Tên người nhận',
   `recipient_phone` VARCHAR(15) NOT NULL COMMENT 'SĐT người nhận tại Việt Nam',
@@ -1180,51 +1181,41 @@ COMMENT = 'Lịch sử thay đổi trạng thái đơn hàng - audit trail';
 
 
 -- -----------------------------------------------------
--- Table `tawatch_db`.`momo_payments`
+-- Table `tawatch_db`.`payments`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `tawatch_db`.`momo_payments` ;
+DROP TABLE IF EXISTS `tawatch_db`.`payments` ;
 
-CREATE TABLE IF NOT EXISTS `tawatch_db`.`momo_payments` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID duy nhất của giao dịch MoMo',
+CREATE TABLE IF NOT EXISTS `tawatch_db`.`payments` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID duy nhất của giao dịch thanh toán',
   -- Foreign Keys
   `order_id` BIGINT UNSIGNED NOT NULL COMMENT 'Liên kết với đơn hàng',
-  -- Thông tin request
-  `request_id` VARCHAR(50) NOT NULL COMMENT 'Request ID gửi đến MoMo (UUID)',
-  `order_info` VARCHAR(255) NOT NULL COMMENT 'Thông tin đơn hàng cho MoMo (VD: Thanh toán đơn ORD-2025-00001)',
-  `amount` DECIMAL(15,2) NOT NULL COMMENT 'Số tiền thanh toán (VNĐ) = total_amount của đơn hàng',
-  -- Thông tin response
-  `trans_id` VARCHAR(50) NULL DEFAULT NULL COMMENT 'Transaction ID từ MoMo (nhận được khi thanh toán thành công)',
-  `result_code` INT NULL DEFAULT NULL COMMENT 'Mã kết quả (0=thành công, khác 0=lỗi)',
-  `message` VARCHAR(500) NULL DEFAULT NULL COMMENT 'Thông báo kết quả từ MoMo (VD: "Success")',
-  -- URL thanh toán
-  `pay_url` TEXT NULL DEFAULT NULL COMMENT 'URL thanh toán MoMo (QR/deep link)',
-  `deep_link` TEXT NULL DEFAULT NULL COMMENT 'Deep link mở app MoMo dùng cho mobile',
-  `qr_code_url` TEXT NULL DEFAULT NULL COMMENT 'URL QR code thanh toán',
-  -- Trạng thái
-  `payment_status` ENUM('PENDING', 'PROCESSING', 'PAID', 'FAILED', 'REFUNDED', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'PENDING' COMMENT 'Trạng thái giao dịch MoMo:
-    - "PENDING" = Chờ khách hàng thực hiện thanh toán (đã tạo link, chưa scan QR)
-    - "PROCESSING" = Đang xử lý giao dịch (MoMo đang verify)
-    - "PAID" = Thanh toán thành công, đã nhận được tiền
-    - "FAILED" = Thanh toán thất bại (lỗi giao dịch hoặc bị từ chối)
-    - "REFUNDED" = Giao dịch đã được hoàn tiền (refund từ MoMo)
-    - "CANCELLED" = Khách hàng hoặc hệ thống hủy giao dịch thanh toán
-    - "EXPIRED" = Hết hạn thanh toán (quá thời gian quy định, thường là 15 phút)',
-  -- Thời gian
-  `request_time` DATETIME NOT NULL COMMENT 'Thời điểm tạo yêu cầu',
-  `response_time` DATETIME NULL DEFAULT NULL COMMENT 'Thời điểm nhận kết quả (IPN callback)',
-  `ipn_data` JSON NULL DEFAULT NULL COMMENT 'Dữ liệu IPN từ MoMo (JSON)',
+  -- Thông tin thanh toán
+  `amount` DECIMAL(15,2) NOT NULL COMMENT 'Số tiền thanh toán (VNĐ)',
+  `status` ENUM('PENDING', 'SUCCESS', 'FAILED', 'EXPIRED') NOT NULL DEFAULT 'PENDING' COMMENT 'Trạng thái thanh toán:
+    - "PENDING" = Đã tạo link thanh toán, đang chờ user thực hiện (chưa có callback từ VNPay/ZaloPay)
+    - "SUCCESS" = Thanh toán thành công (đã nhận callback success từ VNPay/ZaloPay)
+    - "FAILED" = Thanh toán thất bại (user hủy, hoặc callback lỗi từ VNPay/ZaloPay)
+    - "EXPIRED" = Hết hạn thanh toán (quá thời gian cho phép 15-30 phút mà không thanh toán)',
+  `transaction_id` VARCHAR(255) NULL DEFAULT NULL COMMENT 'Mã giao dịch từ cổng thanh toán (VNPay/ZaloPay)',
+  `payment_method` ENUM('VNPAY', 'ZALOPAY') NOT NULL DEFAULT 'VNPAY' COMMENT 'Phương thức thanh toán:
+    - "VNPAY" = Thanh toán qua VNPay
+    - "ZALOPAY" = Thanh toán qua ZaloPay',
+  `response_code` VARCHAR(50) NULL DEFAULT NULL COMMENT 'Mã phản hồi từ cổng thanh toán',
+  `response_message` TEXT NULL DEFAULT NULL COMMENT 'Thông báo phản hồi từ cổng thanh toán, Lưu để hiển thị cho user khi thanh toán thất bại',
+  `paid_at` DATETIME NULL DEFAULT NULL COMMENT 'Thời điểm thanh toán thành công',
   -- Timestamp
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời điểm tạo bản ghi',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời điểm tạo giao dịch',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời điểm cập nhật',
   -- Primary Key và UNIQUE
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `request_id_UNIQUE` (`request_id` ASC) VISIBLE,
   -- Indexes
-  INDEX `idx_momo_payments_order` (`order_id` ASC) VISIBLE,
-  INDEX `idx_momo_payments_trans_id` (`trans_id` ASC) VISIBLE,
-  INDEX `idx_momo_payments_status` (`payment_status` ASC) VISIBLE,
+  INDEX `idx_payments_order` (`order_id` ASC) VISIBLE,
+  INDEX `idx_payments_transaction` (`transaction_id` ASC) VISIBLE,
+  INDEX `idx_payments_status` (`status` ASC) VISIBLE,
+  INDEX `idx_payments_created` (`created_at` ASC) VISIBLE,
+  INDEX `idx_payments_method` (`payment_method` ASC) VISIBLE,
   -- Foreign Key Constraints
-  CONSTRAINT `fk_momo_payments_order`
+  CONSTRAINT `fk_payments_order`
     FOREIGN KEY (`order_id`)
     REFERENCES `tawatch_db`.`orders` (`id`)
     ON DELETE CASCADE
@@ -1232,7 +1223,7 @@ CREATE TABLE IF NOT EXISTS `tawatch_db`.`momo_payments` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_520_ci
-COMMENT = 'Giao dịch thanh toán MoMo - lưu toàn bộ luồng thanh toán';
+COMMENT = 'Giao dịch thanh toán - lưu thông tin thanh toán từ VNPay, ZaloPay';
 
 
 -- -----------------------------------------------------
