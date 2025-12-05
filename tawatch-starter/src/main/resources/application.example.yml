@@ -37,8 +37,27 @@ spring:
     # JDBC driver class for MySQL
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-    # Hikari Connection Pool Advanced Properties
+    # Hikari Connection Pool Configuration
     hikari:
+      # Maximum number of connections in the pool
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+
+      # Minimum number of idle connections in the pool
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+
+      # Maximum time (ms) to wait for a connection from the pool
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+
+      # Maximum time (ms) a connection can remain idle in the pool
+      idle-timeout: ${DB_IDLE_TIMEOUT:600000}
+
+      # Maximum lifetime (ms) of a connection in the pool
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+
+      # Query to test database connection validity
+      connection-test-query: ${DB_TEST_QUERY:SELECT 1}
+
+      # Advanced data source properties
       data-source-properties:
         # Timezone configuration for database connections
         serverTimezone: ${DB_TIMEZONE:Asia/Ho_Chi_Minh}
@@ -111,6 +130,24 @@ server:
   # HTTP server port (override with SERVER_PORT environment variable)
   port: ${SERVER_PORT:8080}
 
+  # Tomcat server thread pool configuration
+  tomcat:
+    threads:
+      # Maximum number of worker threads
+      max: ${SERVER_MAX_THREADS:200}
+
+      # Minimum number of worker threads (always kept alive)
+      min-spare: ${SERVER_MIN_THREADS:20}
+
+    # Maximum number of connections that the server will accept and process
+    max-connections: ${SERVER_MAX_CONNECTIONS:1000}
+
+    # Maximum queue length for incoming connection requests when all threads are busy
+    accept-count: ${SERVER_ACCEPT_COUNT:100}
+
+    # Connection timeout (milliseconds)
+    connection-timeout: ${SERVER_CONNECTION_TIMEOUT:5000}
+
   servlet:
     # Base context path for all API endpoints
     context-path: ${SERVER_CONTEXT_PATH:/api/tawatch}
@@ -120,6 +157,80 @@ server:
       charset: UTF-8               # Character encoding for requests/responses
       enabled: true                # Enable encoding filter
       force: true                  # Force encoding even if header specifies different
+
+  # Error response configuration
+  # Disable default Spring Boot error details because we use custom standardized error responses
+  error:
+    include-message: never         # Don't include exception message in default error response
+    include-binding-errors: never  # Don't include binding errors in default error response
+    include-stacktrace: never      # Don't include stack trace in default error response
+
+# ========================================================
+# SPRINGDOC OPENAPI / SWAGGER CONFIGURATION
+# ========================================================
+springdoc:
+  # OpenAPI documentation configuration
+  api-docs:
+    # Path to OpenAPI documentation endpoint (JSON format)
+    path: ${SWAGGER_API_DOCS_PATH:/v3/api-docs}
+
+    # Enable OpenAPI documentation generation (should be 'false' in production)
+    enabled: ${SWAGGER_ENABLED:false}
+
+  # Swagger UI configuration
+  swagger-ui:
+    # Path to Swagger UI interface
+    path: ${SWAGGER_UI_PATH:/swagger-docs}
+
+    # Enable Swagger UI interface (should be 'false' in production)
+    enabled: ${SWAGGER_UI_ENABLED:false}
+
+    # Sort operations by HTTP method (alpha, method)
+    operations-sorter: ${SWAGGER_OPERATIONS_SORTER:method}
+
+    # Sort tags alphabetically
+    tags-sorter: ${SWAGGER_TAGS_SORTER:alpha}
+
+    # Display request duration in Swagger UI
+    display-request-duration: ${SWAGGER_DISPLAY_REQUEST_DURATION:true}
+
+    # Show Spring Boot Actuator endpoints in Swagger UI (should be 'false' in production)
+  show-actuator: ${SWAGGER_SHOW_ACTUATOR:false}
+
+# ========================================================
+# SPRING BOOT ACTUATOR CONFIGURATION
+# ========================================================
+management:
+  # Actuator endpoints configuration
+  endpoints:
+    web:
+      # Base path for actuator endpoints
+      base-path: ${ACTUATOR_BASE_PATH:/actuator}
+
+      # Comma-separated list of exposed actuator endpoints
+      exposure:
+        include: ${ACTUATOR_EXPOSED_ENDPOINTS:health,info}
+
+  # Health endpoint configuration
+  endpoint:
+    health:
+      # Show detailed health information (always, when-authorized, never)
+      # Recommended: 'when-authorized' in production
+      show-details: ${ACTUATOR_HEALTH_SHOW_DETAILS:when-authorized}
+
+      # Show health component details (always, when-authorized, never)
+      # Recommended: 'when-authorized' in production
+      show-components: ${ACTUATOR_HEALTH_SHOW_COMPONENTS:when-authorized}
+
+  # Health indicators configuration
+  health:
+    # Database health check
+    db:
+      enabled: ${ACTUATOR_HEALTH_DB:true}
+
+    # Mail health check (if mail is configured)
+    mail:
+      enabled: ${ACTUATOR_HEALTH_MAIL:true}
 
 # ========================================================
 # LOGGING CONFIGURATION
