@@ -124,28 +124,46 @@ You should see version numbers for each tool. If any command fails, please insta
 
 **Steps:**
 
-1. **Prepare configuration**
+1. **Create empty database**
+
+    ```bash
+    # Login to MySQL
+    mysql -u root -p
+
+    # Create empty database
+    CREATE DATABASE tawatch_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci;
+    EXIT;
+    ```
+
+    **Important:** You only need to create an **empty database**. **Flyway will automatically create all tables and schema** when the application starts for the first time.
+
+2. **Prepare configuration**
 
     ```bash
     cp tawatch-starter/src/main/resources/application.example.yml \
      tawatch-starter/src/main/resources/application-local.yml
     ```
 
-    Edit `application-local.yml` with your local database credentials.
+    Edit `application-local.yml` with your local database credentials (host, username, password).
 
-2. **Build the project**
+3. **Build the project**
 
     ```bash
     mvn clean install
     ```
 
-3. **Run the application**
+4. **Run the application**
 
     ```bash
     mvn spring-boot:run -pl tawatch-starter -Dspring-boot.run.profiles=local
     ```
 
-4. **Verify it's running**
+    On first startup, **Flyway will automatically run database migrations** and create all tables. Check the logs for:
+    ```
+    Successfully applied 1 migration to schema `tawatch_db`
+    ```
+
+5. **Verify it's running**
 
     Visit [http://localhost:8080/api/tawatch/actuator/health](http://localhost:8080/api/tawatch/actuator/health)
 
@@ -219,15 +237,25 @@ You should see version numbers for each tool. If any command fails, please insta
       ```
     
     Or manually:
-    
+
       ```bash
       docker compose build
       docker compose up
       ```
 
+    **Database Setup:** The MySQL container will start with an empty database. **Flyway will automatically run migrations** on first startup and create all tables. Monitor the logs with:
+    ```bash
+    docker compose logs -f app
+    ```
+
 3. **Verify it's running**
 
     Visit [http://localhost:8080/api/tawatch/actuator/health](http://localhost:8080/api/tawatch/actuator/health)
+
+    Check logs to confirm Flyway migrations completed successfully:
+    ```
+    Successfully applied 1 migration to schema `tawatch_db`
+    ```
 
 ---
 

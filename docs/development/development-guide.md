@@ -159,15 +159,17 @@ cd tawatch-backend
    # Login to MySQL
    mysql -u root -p
 
-   # Create database
-   CREATE DATABASE tawatch CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci;
+   # Create empty database (Flyway will create tables automatically)
+   CREATE DATABASE tawatch_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci;
 
    # Create user (optional but recommended)
    CREATE USER 'tawatch_user'@'localhost' IDENTIFIED BY 'your_password';
-   GRANT ALL PRIVILEGES ON tawatch.* TO 'tawatch_user'@'localhost';
+   GRANT ALL PRIVILEGES ON tawatch_db.* TO 'tawatch_user'@'localhost';
    FLUSH PRIVILEGES;
    EXIT;
    ```
+
+   **Important:** You only need to create an **empty database**. Flyway will automatically create all tables when the application starts.
 
 3. **Copy and configure application settings**
    ```bash
@@ -180,7 +182,7 @@ cd tawatch-backend
    ```yaml
    spring:
      datasource:
-       url: jdbc:mysql://localhost:3306/tawatch?useUnicode=true&characterEncoding=utf8mb4
+       url: jdbc:mysql://localhost:3306/tawatch_db
        username: tawatch_user
        password: your_password
    ```
@@ -351,22 +353,310 @@ server:
   port: ${SERVER_PORT:8080}
   servlet:
     context-path: ${SERVER_CONTEXT_PATH:/api/tawatch}
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 ```
 
 **Database Configuration:**
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch}
-    username: ${DB_USERNAME:tawatch_user}
-    password: ${DB_PASSWORD:tawatch_pass}
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:tawatch_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # Hikari Connection Pool
+    hikari:
+      data-source-properties:
+        serverTimezone: ${DB_TIMEZONE:Asia/Ho_Chi_Minh}
+        useSSL: ${DB_USE_SSL:false}
+        allowPublicKeyRetrieval: ${DB_ALLOW_PUBLIC_KEY_RETRIEVAL:true}
+
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: ${JPA_SHOW_SQL:false}
+
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQL8Dialect}
+        use_sql_comments: ${HIBERNATE_SQL_COMMENTS:true}
+        jdbc:
+          batch_size: ${HIBERNATE_BATCH_SIZE:20}
+          order_inserts: ${HIBERNATE_ORDER_INSERTS:true}
+          order_updates: ${HIBERNATE_ORDER_UPDATES:true}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true
 ```
 
-For complete configuration reference, see [Configuration Guide](../setup/configuration.md).
+**Logging Configuration:**
+```yaml
+logging:
+  level:
+    root: ${LOG_ROOT:INFO}
+    vn.fernirx.tawatch: ${LOG_APP_LEVEL:DEBUG}
+    org.springframework.web: ${LOG_SPRING_WEB:DEBUG}
+    org.hibernate.SQL: ${LOG_HIBERNATE_SQL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_HIBERNATE_BIND:TRACE}
+    org.flywaydb: ${LOG_FLYWAY:DEBUG}
+```
+
+For complete configuration reference with detailed explanations, see [Configuration Guide](../setup/configuration.md).
+
+---
+
+## Database Migrations
+
+Tawatch Backend uses **Flyway** for database schema version control and automated migrations. This ensures consistent database state across all environments.
+
+### How Flyway Works
+
+Flyway automatically:
+1. **Tracks** which migrations have been applied (in `flyway_schema_history` table)
+2. **Applies** new migrations in order on application startup
+3. **Validates** that applied migrations haven't been modified (checksum verification)
+4. **Prevents** out-of-order or duplicate migrations
+
+### Migration File Location
+
+```
+tawatch-starter/src/main/resources/db/migration/
+├── V1__init_schema.sql              # Initial schema (all tables)
+├── V2__add_user_preferences.sql     # Future migration example
+└── V3__alter_products_index.sql     # Future migration example
+```
+
+### Migration Naming Convention
+
+Flyway requires strict naming:
+
+```
+V{version}__{description}.sql
+
+Examples:
+V1__init_schema.sql
+V2__add_user_preferences_table.sql
+V3__alter_products_add_sku_column.sql
+```
+
+**Rules:**
+- Prefix: `V` (uppercase)
+- Version: Number (e.g., `1`, `2`, `3` or `1.1`, `1.2`)
+- Separator: `__` (double underscore)
+- Description: Snake_case description
+- Extension: `.sql`
+
+### Creating a New Migration
+
+**Step 1: Create Migration File**
+
+```bash
+# Navigate to migrations directory
+cd tawatch-starter/src/main/resources/db/migration/
+
+# Create new migration (example: adding a new table)
+touch V2__add_user_preferences_table.sql
+```
+
+**Step 2: Write Migration SQL**
+
+```sql
+-- V2__add_user_preferences_table.sql
+
+CREATE TABLE user_preferences (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    theme VARCHAR(20) DEFAULT 'light',
+    language VARCHAR(5) DEFAULT 'vi',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_user_preferences_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+    CONSTRAINT user_id_UNIQUE UNIQUE (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+
+CREATE INDEX idx_user_preferences_user ON user_preferences(user_id);
+```
+
+**Step 3: Test Migration**
+
+```bash
+# Stop application if running
+# Start application - Flyway will detect and apply new migration
+mvn spring-boot:run -pl tawatch-starter -Dspring-boot.run.profiles=local
+```
+
+Check logs for:
+```
+Migrating schema `tawatch_db` to version "2 - add user preferences table"
+Successfully applied 1 migration to schema `tawatch_db`
+```
+
+### Migration Best Practices
+
+#### ✅ DO:
+
+- **Use transactions** - Flyway wraps each migration in a transaction
+- **Test migrations** - Always test on local database first
+- **Keep migrations small** - One logical change per migration
+- **Write idempotent scripts** - Use `IF NOT EXISTS` when safe
+- **Add indexes** - Don't forget indexes for foreign keys
+- **Document complex migrations** - Add SQL comments
+
+#### ❌ DON'T:
+
+- **Never modify applied migrations** - Creates checksum mismatch
+- **Don't use stored procedures in migrations** - Can cause issues
+- **Avoid large data migrations** - Split into smaller batches
+- **Don't mix DDL and DML** - Separate schema and data changes
+
+### Viewing Migration History
+
+**Check applied migrations:**
+
+```bash
+# Connect to database
+mysql -u root -p tawatch_db
+
+# View migration history
+SELECT version, description, installed_on, success
+FROM flyway_schema_history
+ORDER BY installed_rank;
+```
+
+**Example output:**
+```
++----------+---------------------+---------------------+---------+
+| version  | description         | installed_on        | success |
++----------+---------------------+---------------------+---------+
+| 1        | init schema         | 2025-01-15 10:30:00 |       1 |
+| 2        | add user preferences| 2025-01-16 14:20:00 |       1 |
++----------+---------------------+---------------------+---------+
+```
+
+### Troubleshooting Migrations
+
+#### Migration Fails
+
+**Check logs for error message:**
+```bash
+# Docker
+docker compose logs app | grep -i flyway
+
+# Local
+# Check Spring Boot console output
+```
+
+**Common causes:**
+- Syntax error in SQL
+- Foreign key constraint violation
+- Table/column already exists
+- Insufficient database permissions
+
+#### Checksum Mismatch
+
+**Error:**
+```
+Validate failed: Migration checksum mismatch for migration version 1
+```
+
+**Cause:** Applied migration file was modified after being applied.
+
+**Solution (Development Only):**
+
+```bash
+# Option 1: Clean database and reapply (⚠️ DELETES ALL DATA)
+docker compose down -v
+docker compose up
+
+# Option 2: Repair Flyway (advanced - updates checksums)
+# Not recommended - only use if you know what you're doing
+```
+
+**Solution (Production):**
+
+**Never modify applied migrations in production.** Create a new migration to fix issues.
+
+#### Out of Order Migration
+
+**Error:**
+```
+Detected applied migration not resolved locally: 3
+```
+
+**Cause:** Migration V3 applied, but V2 is missing locally.
+
+**Solution:** Ensure all team members have latest migrations from version control.
+
+### Rollback Strategy
+
+Flyway **does not support automatic rollbacks**. To rollback:
+
+**Option 1: Create Reverse Migration**
+
+```sql
+-- V4__rollback_user_preferences.sql
+DROP TABLE IF EXISTS user_preferences;
+```
+
+**Option 2: Restore from Backup**
+
+```bash
+# Restore database from backup
+mysql -u root -p tawatch_db < backup_2025_01_15.sql
+```
+
+### Environment-Specific Migrations
+
+For different environments, use Flyway locations:
+
+```yaml
+# application-local.yml
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration/dev
+
+# application-docker.yml
+spring:
+  flyway:
+    locations: classpath:db/migration
+```
+
+### Flyway Configuration Reference
+
+Current Flyway settings (from `application.example.yml`):
+
+```yaml
+spring:
+  flyway:
+    enabled: true                    # Enable Flyway
+    baseline-on-migrate: true        # Baseline existing databases
+    locations: classpath:db/migration
+    validate-on-migrate: true        # Validate checksums
+    out-of-order: false              # Disallow out-of-order migrations
+    clean-disabled: true             # Disable clean command
+```
+
+**Configuration via environment variables:**
+
+```bash
+# .env
+FLYWAY_LOCATIONS=classpath:db/migration
+```
+
+For more details, see [Configuration Guide](../setup/configuration.md#database-migration-with-flyway).
 
 ---
 

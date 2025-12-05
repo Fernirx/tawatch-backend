@@ -15,6 +15,38 @@ The Tawatch database (`tawatch_db`) is designed to support a complete e-commerce
 
 ---
 
+## Schema Management with Flyway
+
+The Tawatch database schema is version-controlled using **Flyway**. All schema changes are managed through SQL migration scripts.
+
+### Migration Scripts Location
+
+```
+tawatch-starter/src/main/resources/db/migration/
+└── V1__init_schema.sql    # Complete initial schema (all tables below)
+```
+
+### How Migrations Work
+
+1. **Automatic Execution** - Flyway runs on application startup
+2. **Version Control** - Each migration has a version number (V1, V2, V3, etc.)
+3. **One-Time Application** - Each migration runs only once
+4. **Tracking** - Applied migrations are recorded in `flyway_schema_history` table
+
+### Creating Schema Changes
+
+**Never modify the database schema manually.** Always create a new migration:
+
+```sql
+-- Example: V2__add_product_ratings.sql
+ALTER TABLE products ADD COLUMN average_rating DECIMAL(3,2) DEFAULT 0.00;
+CREATE INDEX idx_products_rating ON products(average_rating);
+```
+
+For detailed Flyway workflow and best practices, see [Development Guide](../development/development-guide.md#database-migrations).
+
+---
+
 ## Database Structure
 
 The schema is organized into six logical modules:
@@ -34,21 +66,21 @@ The schema is organized into six logical modules:
 
 **Purpose:** Manages user accounts, authentication, and authorization.
 
-| Field            | Type            | Description                                  |
-|------------------|-----------------|----------------------------------------------|
-| `id`             | BIGINT UNSIGNED | Unique user ID (primary key)                 |
-| `email`          | VARCHAR(100)    | Login email (unique)                         |
-| `password_hash`  | VARCHAR(255)    | Hashed password (NULL for OAuth)             |
-| `provider`       | ENUM            | Authentication method: `LOCAL`, `GOOGLE`     |
-| `provider_id`    | VARCHAR(255)    | OAuth provider ID (Google sub claim)         |
-| `role`           | ENUM            | User role: `USER`, `STAFF`, `ADMIN` |
-| `is_verified`    | BOOLEAN         | Email verification status                    |
-| `is_active`      | BOOLEAN         | Account active status                        |
-| `login_attempts` | TINYINT         | Failed login counter                         |
-| `locked_until`   | DATETIME        | Account unlock timestamp                     |
-| `last_login`     | DATETIME        | Last successful login                        |
-| `created_at`     | DATETIME        | Account creation timestamp                   |
-| `updated_at`     | DATETIME        | Last update timestamp                        |
+| Field            | Type            | Description                              |
+|------------------|-----------------|------------------------------------------|
+| `id`             | BIGINT UNSIGNED | Unique user ID (primary key)             |
+| `email`          | VARCHAR(100)    | Login email (unique)                     |
+| `password_hash`  | VARCHAR(255)    | Hashed password (NULL for OAuth)         |
+| `provider`       | ENUM            | Authentication method: `LOCAL`, `GOOGLE` |
+| `provider_id`    | VARCHAR(255)    | OAuth provider ID (Google sub claim)     |
+| `role`           | ENUM            | User role: `USER`, `STAFF`, `ADMIN`      |
+| `is_verified`    | BOOLEAN         | Email verification status                |
+| `is_active`      | BOOLEAN         | Account active status                    |
+| `login_attempts` | TINYINT         | Failed login counter                     |
+| `locked_until`   | DATETIME        | Account unlock timestamp                 |
+| `last_login`     | DATETIME        | Last successful login                    |
+| `created_at`     | DATETIME        | Account creation timestamp               |
+| `updated_at`     | DATETIME        | Last update timestamp                    |
 
 **Key Indexes:**
 - `email_UNIQUE` (`email`) - Ensures email uniqueness
@@ -619,7 +651,8 @@ The schema is organized into six logical modules:
 **Constraints:**
 - UNIQUE `user_cart_user_UNIQUE` (`user_id`) - One cart per user
 - UNIQUE `user_cart_guest_UNIQUE` (`guest_token`) - One cart per guest token
-- CHECK `chk_cart_user_or_guest` - Either user_id OR guest_token must be set (not both, not neither)
+
+**Business Rule:** Either user_id OR guest_token must be set (not both, not neither) - enforced at application layer
 
 ### `cart_items`
 
@@ -677,39 +710,39 @@ The schema is organized into six logical modules:
 
 **Purpose:** Customer orders (main order table).
 
-| Field                     | Type            | Description                                                                                    |
-|---------------------------|-----------------|------------------------------------------------------------------------------------------------|
-| `id`                      | BIGINT UNSIGNED | Order ID (primary key)                                                                         |
-| `user_id`                 | BIGINT UNSIGNED | User reference (NULL for guest)                                                                |
-| `code`                    | VARCHAR(50)     | Order code (unique, e.g., ORD-2025-00001)                                                      |
-| `guest_token`             | VARCHAR(64)     | Guest token (NULL for user)                                                                    |
-| `status`                  | ENUM            | Status: `PENDING`, `CONFIRMED`, `PROCESSING`, `SHIPPING`, `DELIVERED`, `CANCELLED`, `REFUNDED` |
-| `payment_status`          | ENUM            | Payment: `UNPAID`, `PENDING`, `PAID`, `FAILED`, `REFUNDED`                                     |
-| `payment_method`          | ENUM            | Method: `MOMO`, `COD`                                                                          |
-| `recipient_name`          | VARCHAR(200)    | Recipient's name                                                                               |
-| `recipient_phone`         | VARCHAR(15)     | Recipient's phone                                                                              |
-| `shipping_street`         | VARCHAR(255)    | Shipping street address                                                                        |
-| `shipping_ward`           | VARCHAR(100)    | Shipping ward                                                                                  |
-| `shipping_city`           | VARCHAR(100)    | Shipping city                                                                                  |
-| `shipping_postal_code`    | VARCHAR(6)      | Postal code                                                                                    |
-| `shipping_country`        | VARCHAR(100)    | Country (default: Vietnam)                                                                     |
-| `subtotal`                | DECIMAL(15,2)   | Products subtotal                                                                              |
-| `shipping_fee`            | DECIMAL(15,2)   | Shipping cost                                                                                  |
-| `discount_amount`         | DECIMAL(15,2)   | Discount applied                                                                               |
-| `total_amount`            | DECIMAL(15,2)   | Final total (subtotal + shipping - discount)                                                   |
-| `coupon_code`             | VARCHAR(50)     | Applied coupon code                                                                            |
-| `note`                    | TEXT            | Customer notes                                                                                 |
-| `admin_note`              | TEXT            | Internal admin notes                                                                           |
-| `cancelled_reason`        | TEXT            | Cancellation reason                                                                            |
-| `cancelled_by`            | ENUM            | Cancelled by: `CUSTOMER`, `STAFF`, `ADMIN`, `SYSTEM`                                           |
-| `cancelled_at`            | DATETIME        | Cancellation timestamp                                                                         |
-| `confirmed_at`            | DATETIME        | Confirmation timestamp                                                                         |
-| `estimated_delivery_date` | DATE            | Estimated delivery                                                                             |
-| `tracking_number`         | VARCHAR(100)    | Shipping tracking number                                                                       |
-| `delivered_at`            | DATETIME        | Delivery timestamp                                                                             |
-| `expired_at`              | DATETIME        | Payment expiration                                                                             |
-| `created_at`              | DATETIME        | Order creation timestamp                                                                       |
-| `updated_at`              | DATETIME        | Last update timestamp                                                                          |
+| Field                     | Type            | Description                                                                                      |
+|---------------------------|-----------------|--------------------------------------------------------------------------------------------------|
+| `id`                      | BIGINT UNSIGNED | Order ID (primary key)                                                                           |
+| `user_id`                 | BIGINT UNSIGNED | User reference (NULL for guest)                                                                  |
+| `code`                    | VARCHAR(50)     | Order code (unique, e.g., ORD-2025-00001)                                                        |
+| `guest_token`             | VARCHAR(64)     | Guest token (NULL for user)                                                                      |
+| `status`                  | ENUM            | Status: `PENDING`, `CONFIRMED`, `PROCESSING`, `SHIPPING`, `DELIVERED`, `CANCELLED`, `REFUNDED`   |
+| `payment_status`          | ENUM            | Payment: `UNPAID`, `PENDING`, `PROCESSING`, `PAID`, `FAILED`, `REFUNDED`, `CANCELLED`, `EXPIRED` |
+| `payment_method`          | ENUM            | Method: `MOMO`, `COD`                                                                            |
+| `recipient_name`          | VARCHAR(200)    | Recipient's name                                                                                 |
+| `recipient_phone`         | VARCHAR(15)     | Recipient's phone                                                                                |
+| `shipping_street`         | VARCHAR(255)    | Shipping street address                                                                          |
+| `shipping_ward`           | VARCHAR(100)    | Shipping ward                                                                                    |
+| `shipping_city`           | VARCHAR(100)    | Shipping city                                                                                    |
+| `shipping_postal_code`    | VARCHAR(6)      | Postal code                                                                                      |
+| `shipping_country`        | VARCHAR(100)    | Country (default: Vietnam)                                                                       |
+| `subtotal`                | DECIMAL(15,2)   | Products subtotal                                                                                |
+| `shipping_fee`            | DECIMAL(15,2)   | Shipping cost                                                                                    |
+| `discount_amount`         | DECIMAL(15,2)   | Discount applied                                                                                 |
+| `total_amount`            | DECIMAL(15,2)   | Final total (subtotal + shipping - discount)                                                     |
+| `coupon_code`             | VARCHAR(50)     | Applied coupon code                                                                              |
+| `note`                    | TEXT            | Customer notes                                                                                   |
+| `admin_note`              | TEXT            | Internal admin notes                                                                             |
+| `cancelled_reason`        | TEXT            | Cancellation reason                                                                              |
+| `cancelled_by`            | ENUM            | Cancelled by: `CUSTOMER`, `STAFF`, `ADMIN`, `SYSTEM`                                             |
+| `cancelled_at`            | DATETIME        | Cancellation timestamp                                                                           |
+| `confirmed_at`            | DATETIME        | Confirmation timestamp                                                                           |
+| `estimated_delivery_date` | DATE            | Estimated delivery                                                                               |
+| `tracking_number`         | VARCHAR(100)    | Shipping tracking number                                                                         |
+| `delivered_at`            | DATETIME        | Delivery timestamp                                                                               |
+| `expired_at`              | DATETIME        | Payment expiration                                                                               |
+| `created_at`              | DATETIME        | Order creation timestamp                                                                         |
+| `updated_at`              | DATETIME        | Last update timestamp                                                                            |
 
 **Order Status Flow:**
 1. PENDING - Order created, awaiting payment/confirmation
@@ -720,11 +753,21 @@ The schema is organized into six logical modules:
 6. CANCELLED - Order cancelled
 7. REFUNDED - Payment refunded
 
+**Payment Status Values:**
+- **UNPAID** - Not yet paid (applies to COD orders - payment on delivery)
+- **PENDING** - Waiting for online payment (payment link created, waiting for customer to scan QR)
+- **PROCESSING** - Processing payment transaction (verifying with payment gateway)
+- **PAID** - Payment successful, system confirmed receipt of funds
+- **FAILED** - Payment failed (transaction error, rejected, or insufficient funds)
+- **REFUNDED** - Order refunded after cancellation or return
+- **CANCELLED** - Payment transaction cancelled by customer or system
+- **EXPIRED** - Payment expired (exceeded allowed time limit)
+
 **Payment Methods:**
 - **MOMO** - MoMo e-wallet payment
 - **COD** - Cash on Delivery
 
-**Constraint:** Either user_id OR guest_token must be set.
+**Business Rule:** Either user_id OR guest_token must be set (enforced at application layer).
 
 ### `order_items`
 
@@ -768,25 +811,25 @@ The schema is organized into six logical modules:
 
 **Purpose:** MoMo payment gateway transaction tracking.
 
-| Field            | Type            | Description                                                    |
-|------------------|-----------------|----------------------------------------------------------------|
-| `id`             | BIGINT UNSIGNED | Payment record ID (primary key)                                |
-| `order_id`       | BIGINT UNSIGNED | Order reference                                                |
-| `request_id`     | VARCHAR(50)     | MoMo request ID (unique)                                       |
-| `order_info`     | VARCHAR(255)    | Order description for MoMo                                     |
-| `amount`         | DECIMAL(15,2)   | Payment amount (VNĐ)                                           |
-| `trans_id`       | VARCHAR(50)     | MoMo transaction ID                                            |
-| `result_code`    | INT             | Result code (0 = success)                                      |
-| `message`        | VARCHAR(500)    | MoMo response message                                          |
-| `pay_url`        | TEXT            | Payment URL                                                    |
-| `deep_link`      | TEXT            | MoMo app deep link                                             |
-| `qr_code_url`    | TEXT            | QR code URL                                                    |
-| `payment_status` | ENUM            | Status: `PENDING`, `SUCCESS`, `FAILED`, `EXPIRED`, `CANCELLED` |
-| `request_time`   | DATETIME        | Request timestamp                                              |
-| `response_time`  | DATETIME        | Response timestamp (IPN callback)                              |
-| `ipn_data`       | JSON            | Full IPN data from MoMo                                        |
-| `created_at`     | DATETIME        | Creation timestamp                                             |
-| `updated_at`     | DATETIME        | Last update timestamp                                          |
+| Field            | Type            | Description                                                                           |
+|------------------|-----------------|---------------------------------------------------------------------------------------|
+| `id`             | BIGINT UNSIGNED | Payment record ID (primary key)                                                       |
+| `order_id`       | BIGINT UNSIGNED | Order reference                                                                       |
+| `request_id`     | VARCHAR(50)     | MoMo request ID (unique)                                                              |
+| `order_info`     | VARCHAR(255)    | Order description for MoMo                                                            |
+| `amount`         | DECIMAL(15,2)   | Payment amount (VNĐ)                                                                  |
+| `trans_id`       | VARCHAR(50)     | MoMo transaction ID                                                                   |
+| `result_code`    | INT             | Result code (0 = success)                                                             |
+| `message`        | VARCHAR(500)    | MoMo response message                                                                 |
+| `pay_url`        | TEXT            | Payment URL                                                                           |
+| `deep_link`      | TEXT            | MoMo app deep link                                                                    |
+| `qr_code_url`    | TEXT            | QR code URL                                                                           |
+| `payment_status` | ENUM            | Status: `PENDING`, `PROCESSING`, `PAID`, `FAILED`, `REFUNDED`, `CANCELLED`, `EXPIRED` |
+| `request_time`   | DATETIME        | Request timestamp                                                                     |
+| `response_time`  | DATETIME        | Response timestamp (IPN callback)                                                     |
+| `ipn_data`       | JSON            | Full IPN data from MoMo                                                               |
+| `created_at`     | DATETIME        | Creation timestamp                                                                    |
+| `updated_at`     | DATETIME        | Last update timestamp                                                                 |
 
 **Constraints:**
 - UNIQUE `request_id_UNIQUE` (`request_id`) - Unique MoMo requests
@@ -796,12 +839,16 @@ The schema is organized into six logical modules:
 - `idx_momo_payments_trans_id` (`trans_id`) - Transaction ID lookup
 - `idx_momo_payments_status` (`payment_status`) - Status filtering
 
-**Payment Flow:**
-1. PENDING - Payment request created
-2. SUCCESS - Payment completed successfully
-3. FAILED - Payment failed
-4. EXPIRED - Payment link expired
-5. CANCELLED - Payment cancelled
+**Payment Status Values:**
+- **PENDING** - Waiting for customer to complete payment (link created, QR not scanned yet)
+- **PROCESSING** - Processing transaction (MoMo verifying payment)
+- **PAID** - Payment successful, funds received
+- **FAILED** - Payment failed (transaction error or rejected)
+- **REFUNDED** - Transaction refunded (refund from MoMo)
+- **CANCELLED** - Customer or system cancelled payment transaction
+- **EXPIRED** - Payment expired (exceeded time limit, typically 15 minutes)
+
+**Note:** MoMo payments do not have UNPAID status - all MoMo transactions start at PENDING.
 
 ### `coupon_usage`
 
@@ -844,9 +891,9 @@ The schema is organized into six logical modules:
 | `created_at`           | DATETIME        | Review creation timestamp         |
 | `updated_at`           | DATETIME        | Last update timestamp             |
 
-**Constraints:**
-- CHECK `chk_rating_range` - Rating must be between 1 and 5
-- CHECK `chk_verified_purchase` - Verified purchase requires order_id
+**Business Rules (enforced at application layer):**
+- Rating must be between 1 and 5
+- Verified purchase requires order_id
 
 **Key Indexes:**
 - `idx_reviews_product_approved` (`product_id`, `is_approved`) - Approved product reviews
@@ -1031,12 +1078,12 @@ All foreign key columns are indexed for join performance.
 **ON UPDATE Behaviors:**
 - `CASCADE` - Update child records when parent ID changes (all foreign keys)
 
-### Check Constraints
+**Business Rules (Application Layer):**
 
-- Product rating: 1-5 range
-- Cart: Either user_id OR guest_token (not both)
-- Order: Either user_id OR guest_token (not both)
-- Review verified purchase: order_id required if verified
+Business logic constraints are enforced at the application layer rather than through database CHECK constraints:
+- Product ratings limited to 1-5 range
+- Cart/Order validation: Either user_id OR guest_token must be set (mutually exclusive)
+- Verified purchase reviews require order_id reference
 
 ---
 
