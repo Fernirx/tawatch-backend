@@ -158,6 +158,13 @@ server:
       enabled: true                # Enable encoding filter
       force: true                  # Force encoding even if header specifies different
 
+  # Error response configuration
+  # Disable default Spring Boot error details because we use custom standardized error responses
+  error:
+    include-message: never         # Don't include exception message in default error response
+    include-binding-errors: never  # Don't include binding errors in default error response
+    include-stacktrace: never      # Don't include stack trace in default error response
+
 # ========================================================
 # SPRINGDOC OPENAPI / SWAGGER CONFIGURATION
 # ========================================================
