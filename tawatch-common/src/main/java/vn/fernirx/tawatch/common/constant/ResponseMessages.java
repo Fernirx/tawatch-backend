@@ -42,8 +42,12 @@ public final class ResponseMessages {
 
         /* ================== OTP ================== */
         public static final String OTP_VALIDATION_FAILED = "OTP validation failed";
+        public static final String OTP_MAX_ATTEMPTS_EXCEED = "Maximum OTP attempts exceeded";
         public static final String OTP_MAX_RESEND_EXCEEDED = "Maximum OTP resend attempts exceeded";
         public static final String OTP_RESEND_COOLDOWN = "You must wait before requesting another OTP";
+
+        /* ================== REQUEST ================== */
+        public static final String MALFORMED_JSON = "Malformed JSON in request body";
 
         /* ================== SERVER ================== */
         public static final String INTERNAL = "Internal server error";
