@@ -80,6 +80,12 @@
                 <version>${springdoc.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-common</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
             <!-- Commons Lang3: override old versions to fix CVE-2025-48924 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
