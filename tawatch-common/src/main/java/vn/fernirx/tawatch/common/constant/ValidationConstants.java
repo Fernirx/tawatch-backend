@@ -4,6 +4,7 @@ public final class ValidationConstants {
 
     public static final class Patterns {
         public static final String PHONE = "^\\+[1-9]\\d{1,14}$";
+        public static final String OTP = "^\\d{6}$";
         private Patterns() {}
     }
 
