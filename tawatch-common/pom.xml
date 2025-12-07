@@ -30,6 +30,12 @@
             <artifactId>spring-data-commons</artifactId>
         </dependency>
 
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- Json Starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
