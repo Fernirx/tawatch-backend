@@ -2,7 +2,11 @@ package vn.fernirx.tawatch.common.constant;
 
 public final class ResponseMessages {
 
-    /* ================== INNER CLASS: SUCCESS ================== */
+    private ResponseMessages() {
+        throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
+    }
+
+    /* ================== SUCCESS MESSAGES ================== */
     public static final class Success {
 
         /* ================== GENERIC ================== */
@@ -25,8 +29,9 @@ public final class ResponseMessages {
         private Success() {}
     }
 
-    /* ================== INNER CLASS: ERROR ================== */
+    /* ================== ERROR MESSAGES ================== */
     public static final class Error {
+
         /* ================== RESOURCE ================== */
         public static final String NOT_FOUND = "%s not found";
         public static final String ALREADY_EXISTS = "%s already exists";
@@ -54,9 +59,5 @@ public final class ResponseMessages {
         public static final String SERVICE_UNAVAILABLE = "The service is currently unavailable";
 
         private Error() {}
-    }
-
-    private ResponseMessages() {
-        throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
     }
 }

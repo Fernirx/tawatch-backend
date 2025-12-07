@@ -21,7 +21,6 @@ public class ErrorDetail {
     @Schema(description = "The name of the field or parameter that caused the error")
     private String field;
 
-
     @Schema(description = "Human-readable error message describing the issue with the field")
     private String message;
 

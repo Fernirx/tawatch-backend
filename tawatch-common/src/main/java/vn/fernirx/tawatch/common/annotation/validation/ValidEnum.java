@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EnumValidator.class)
 @Documented
-public @interface ValidEnum{
+public @interface ValidEnum {
     String message() default "Enum value is invalid";
 
     Class<?>[] groups() default {};

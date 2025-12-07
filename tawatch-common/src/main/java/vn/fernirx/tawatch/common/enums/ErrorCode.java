@@ -11,6 +11,7 @@ import java.util.Optional;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+
     /* ================== SERVER ================== */
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR),
     SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE),
@@ -44,14 +45,14 @@ public enum ErrorCode {
     private final String code;
     private final HttpStatus httpStatus;
 
-    @JsonValue
-    public String getCode() {
-        return code;
-    }
-
     public static Optional<ErrorCode> fromCode(String code) {
         return Arrays.stream(values())
                 .filter(e -> e.getCode().equals(code))
                 .findFirst();
+    }
+
+    @JsonValue
+    public String getCode() {
+        return code;
     }
 }

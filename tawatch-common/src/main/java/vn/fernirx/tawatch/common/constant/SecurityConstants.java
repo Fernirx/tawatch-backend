@@ -2,6 +2,10 @@ package vn.fernirx.tawatch.common.constant;
 
 public final class SecurityConstants {
 
+    private SecurityConstants() {
+        throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
+    }
+
     /* ================== JWT ================== */
     public static final String JWT_ACCESS_TOKEN = "access_token";
     public static final String JWT_REFRESH_TOKEN = "refresh_token";
@@ -16,8 +20,4 @@ public final class SecurityConstants {
     public static final String TOKEN_TYPE = "Bearer";
     public static final int BEARER_PREFIX_LENGTH = 7;
     public static final String CONTENT_TYPE_JSON = "application/json";
-
-    private SecurityConstants() {
-        throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
-    }
 }
