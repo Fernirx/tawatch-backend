@@ -59,6 +59,7 @@
     <modules>
         <module>tawatch-starter</module>
         <module>tawatch-common</module>
+        <module>tawatch-infrastructure</module>
     </modules>
 
     <!-- ========== Dependency Management ========= -->
