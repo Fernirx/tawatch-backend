@@ -166,6 +166,49 @@ server:
     include-stacktrace: never      # Don't include stack trace in default error response
 
 # ========================================================
+# APPLICATION CUSTOM CONFIGURATION
+# ========================================================
+application:
+  # ========================================================
+  # SECURITY CONFIGURATION
+  # ========================================================
+  security:
+    # JWT (JSON Web Token) Authentication Configuration
+    jwt:
+      # JWT secret key for signing and verifying tokens
+      # WARNING: MUST be changed to a strong, random value in production!
+      # Minimum recommended length: 256 bits (32 characters)
+      secret: ${JWT_SECRET:ChangeThisJWTSecretInProduction}
+
+      # Access token configuration
+      access:
+        # Access token expiration duration (ISO-8601 Duration format)
+        # Format: PT[hours]H[minutes]M[seconds]S
+        # Examples: PT15M (15 minutes), PT1H (1 hour), PT30M (30 minutes)
+        # Recommended: Short-lived (5-15 minutes) for better security
+        expiration: ${JWT_ACCESS_EXPIRATION:PT10M}
+
+      # Refresh token configuration
+      refresh:
+        # Refresh token expiration duration (ISO-8601 Duration format)
+        # Format: P[days]D or PT[hours]H
+        # Examples: P7D (7 days), P30D (30 days), PT24H (24 hours)
+        # Recommended: Longer-lived (7-30 days) to avoid frequent re-authentication
+        expiration: ${JWT_REFRESH_EXPIRATION:P7D}
+
+      # Reset password token configuration
+      reset-password:
+        # Reset password token expiration duration (ISO-8601 Duration format)
+        # Format: PT[hours]H[minutes]M
+        # Examples: PT15M (15 minutes), PT30M (30 minutes), PT1H (1 hour)
+        # Recommended: Short-lived (15-30 minutes) for security
+        expiration: ${JWT_RESET_PASSWORD_EXPIRATION:PT15M}
+
+      # JWT issuer identifier (appears in 'iss' claim)
+      # Used to identify the system that issued the token
+      issuer: ${JWT_ISSUER:TAwatch-System}
+
+# ========================================================
 # SPRINGDOC OPENAPI / SWAGGER CONFIGURATION
 # ========================================================
 springdoc:
