@@ -42,6 +42,9 @@
         <spring-boot.version>3.5.7</spring-boot.version>
         <springdoc.version>2.8.14</springdoc.version>
 
+        <!-- Token version -->
+        <io.jsonwebtoken.version>0.13.0</io.jsonwebtoken.version>
+
         <!-- Commons Lang3 version: >=3.18.0 fixes CVE-2025-48924 -->
         <commons.lang3.version>3.18.0</commons.lang3.version>
 
@@ -85,6 +88,13 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-common</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Json Web Token -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${io.jsonwebtoken.version}</version>
             </dependency>
 
             <!-- Commons Lang3: override old versions to fix CVE-2025-48924 -->
