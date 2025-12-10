@@ -23,13 +23,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final List<String> SKIP_PATHS = List.of(
-            "/v3/api-docs",
-            "/swagger-ui.html",
-            "/swagger-ui/index.html",
-            "/actuator/health",
-            "/actuator/info"
-    );
     private final JwtProvider jwtProvider;
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
@@ -40,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if  (SKIP_PATHS.contains(request.getServletPath())) {
+        if  (SecurityConstants.SKIP_PATHS.contains(request.getServletPath())) {
             filterChain.doFilter(request, response);
             return;
         }

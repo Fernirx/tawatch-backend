@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
+import vn.fernirx.tawatch.common.constant.SecurityConstants;
 import vn.fernirx.tawatch.infrastructure.handler.CustomAccessDeniedHandler;
 import vn.fernirx.tawatch.infrastructure.handler.JwtAuthenticationEntryPoint;
 import vn.fernirx.tawatch.infrastructure.security.JwtAuthenticationFilter;
@@ -44,13 +45,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-docs/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/webjars/**",
-                                "/actuator/health"
-                        ).permitAll()
+                        .requestMatchers(SecurityConstants.PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
