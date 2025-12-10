@@ -52,7 +52,9 @@ public final class ResponseMessages {
         public static final String OTP_RESEND_COOLDOWN = "You must wait before requesting another OTP";
 
         /* ================== REQUEST ================== */
+        public static final String VALIDATION_FAILED = "Request validation failed";
         public static final String MALFORMED_JSON = "Malformed JSON in request body";
+        public static final String INVALID_PARAMETER = "Invalid value for field: %s";
 
         /* ================== SERVER ================== */
         public static final String INTERNAL = "Internal server error";
