@@ -69,6 +69,54 @@ spring:
         allowPublicKeyRetrieval: ${DB_ALLOW_PUBLIC_KEY_RETRIEVAL:true}
 
   # ========================================================
+  # MAIL CONFIGURATION (SMTP)
+  # ========================================================
+  mail:
+    # SMTP server hostname
+    # Common providers:
+    #   - Gmail: smtp.gmail.com
+    #   - Outlook: smtp-mail.outlook.com
+    #   - Yahoo: smtp.mail.yahoo.com
+    host: ${MAIL_HOST:smtp.gmail.com}
+
+    # SMTP server port
+    # Common ports:
+    #   - 587: TLS/STARTTLS (recommended)
+    #   - 465: SSL
+    #   - 25: Unencrypted (not recommended)
+    port: ${MAIL_PORT:587}
+
+    # SMTP authentication username (usually your email address)
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+
+    # SMTP authentication password
+    # For Gmail: Use App Password, not regular password
+    # For other providers: Use app-specific password or regular password
+    # WARNING: Never commit real passwords to version control!
+    password: ${MAIL_PASSWORD:your-app-password}
+
+    # Additional SMTP properties
+    properties:
+      # Enable SMTP authentication
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+
+      # Enable STARTTLS encryption (upgrade plain connection to TLS)
+      # Required for port 587
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS_ENABLE:true}
+
+      # Connection timeout (milliseconds)
+      # Maximum time to wait for SMTP server connection
+      mail.smtp.connection-timeout: ${MAIL_CONNECTION_TIMEOUT:5000}
+
+      # Socket read timeout (milliseconds)
+      # Maximum time to wait for SMTP server response
+      mail.smtp.timeout: ${MAIL_TIMEOUT:5000}
+
+      # Socket write timeout (milliseconds)
+      # Maximum time to wait for writing to SMTP server
+      mail.smtp.write-timeout: ${MAIL_WRITE_TIMEOUT:5000}
+
+  # ========================================================
   # JPA / HIBERNATE CONFIGURATION
   # ========================================================
   jpa:
