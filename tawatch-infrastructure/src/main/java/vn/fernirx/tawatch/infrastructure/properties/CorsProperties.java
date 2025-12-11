@@ -1,29 +1,30 @@
 package vn.fernirx.tawatch.infrastructure.properties;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
+import java.util.List;
 
 @Data
 @Validated
 @ConfigurationProperties(prefix = "application.cors")
 public class CorsProperties {
 
-    /** Allowed origins for CORS requests (comma-separated URLs) */
-    @NotBlank
-    private String allowedOrigins = "https://yourdomain";
+    /** Allowed origins for CORS requests */
+    @NotEmpty
+    private List<String> allowedOrigins = List.of("https://yourdomain");
 
-    /** Allowed HTTP methods for CORS requests (comma-separated) */
-    @NotBlank
-    private String allowedMethods = "GET,POST,PUT,DELETE,OPTIONS,PATCH";
+    /** Allowed HTTP methods for CORS requests */
+    @NotEmpty
+    private List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH");
 
-    /** Allowed headers in CORS requests (comma-separated or '*' for all) */
-    @NotBlank
-    private String allowedHeaders = "*";
+    /** Allowed headers in CORS requests */
+    @NotEmpty
+    private List<String> allowedHeaders = List.of("*");
 
     /** Allow credentials (cookies, authorization headers) in CORS requests */
     private Boolean allowCredentials = true;
