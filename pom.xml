@@ -49,6 +49,8 @@
         <!-- Commons Lang3 version: >=3.18.0 fixes CVE-2025-48924 -->
         <commons.lang3.version>3.18.0</commons.lang3.version>
 
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+
         <!-- Cache -->
         <caffeine.version>3.2.2</caffeine.version>
 
@@ -122,6 +124,13 @@
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
+            </dependency>
+
+            <!-- MapStruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
