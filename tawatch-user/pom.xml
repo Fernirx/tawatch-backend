@@ -23,7 +23,7 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-        <!--    Mapstruct     -->
+        <!-- Mapstruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
