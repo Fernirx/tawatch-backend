@@ -3,8 +3,7 @@ package vn.fernirx.tawatch.common.exception;
 import lombok.Getter;
 import vn.fernirx.tawatch.common.constant.ResponseMessages;
 import vn.fernirx.tawatch.common.enums.ErrorCode;
-
-import javax.security.sasl.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 
 @Getter
 public class TokenException extends AuthenticationException {

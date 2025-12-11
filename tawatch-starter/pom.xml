@@ -18,6 +18,13 @@
 
     <!-- ========== Dependencies ========= -->
     <dependencies>
+        <!-- Module -->
+        <dependency>
+            <groupId>vn.fernirx</groupId>
+            <artifactId>tawatch-infrastructure</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!-- Spring Boot core web dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

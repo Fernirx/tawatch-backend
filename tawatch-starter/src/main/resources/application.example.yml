@@ -69,6 +69,88 @@ spring:
         allowPublicKeyRetrieval: ${DB_ALLOW_PUBLIC_KEY_RETRIEVAL:true}
 
   # ========================================================
+  # MAIL CONFIGURATION (SMTP)
+  # ========================================================
+  mail:
+    # SMTP server hostname
+    # Common providers:
+    #   - Gmail: smtp.gmail.com
+    #   - Outlook: smtp-mail.outlook.com
+    #   - Yahoo: smtp.mail.yahoo.com
+    host: ${MAIL_HOST:smtp.gmail.com}
+
+    # SMTP server port
+    # Common ports:
+    #   - 587: TLS/STARTTLS (recommended)
+    #   - 465: SSL
+    #   - 25: Unencrypted (not recommended)
+    port: ${MAIL_PORT:587}
+
+    # SMTP authentication username (usually your email address)
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+
+    # SMTP authentication password
+    # For Gmail: Use App Password, not regular password
+    # For other providers: Use app-specific password or regular password
+    # WARNING: Never commit real passwords to version control!
+    password: ${MAIL_PASSWORD:your-app-password}
+
+    # Additional SMTP properties
+    properties:
+      # Enable SMTP authentication
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+
+      # Enable STARTTLS encryption (upgrade plain connection to TLS)
+      # Required for port 587
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS_ENABLE:true}
+
+      # Connection timeout (milliseconds)
+      # Maximum time to wait for SMTP server connection
+      mail.smtp.connection-timeout: ${MAIL_CONNECTION_TIMEOUT:5000}
+
+      # Socket read timeout (milliseconds)
+      # Maximum time to wait for SMTP server response
+      mail.smtp.timeout: ${MAIL_TIMEOUT:5000}
+
+      # Socket write timeout (milliseconds)
+      # Maximum time to wait for writing to SMTP server
+      mail.smtp.write-timeout: ${MAIL_WRITE_TIMEOUT:5000}
+
+  # ========================================================
+  # SPRING SECURITY OAUTH2 CONFIGURATION
+  # ========================================================
+  security:
+    oauth2:
+      client:
+        # OAuth2 client registrations for social login
+        registration:
+          # Google OAuth2 Configuration
+          google:
+            # OAuth2 Client ID from Google Cloud Console
+            # How to get:
+            #   1. Go to https://console.cloud.google.com/
+            #   2. Create a project or select existing project
+            #   3. Navigate to "APIs & Services" > "Credentials"
+            #   4. Create OAuth 2.0 Client ID (Web application)
+            #   5. Add authorized redirect URIs:
+            #      - http://localhost:8080/login/oauth2/code/google (development)
+            #      - https://yourdomain.com/api/tawatch/login/oauth2/code/google (production)
+            # WARNING: Keep this confidential, never commit to version control!
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+
+            # OAuth2 Client Secret from Google Cloud Console
+            # WARNING: This is sensitive data! Use environment variables in production!
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+
+            # OAuth2 scopes requested from Google
+            # - profile: Basic profile information (name, picture)
+            # - email: User's email address
+            # Additional scopes: openid (for OpenID Connect)
+            scope:
+              - profile
+              - email
+
+  # ========================================================
   # JPA / HIBERNATE CONFIGURATION
   # ========================================================
   jpa:
@@ -164,6 +246,144 @@ server:
     include-message: never         # Don't include exception message in default error response
     include-binding-errors: never  # Don't include binding errors in default error response
     include-stacktrace: never      # Don't include stack trace in default error response
+
+# ========================================================
+# APPLICATION CUSTOM CONFIGURATION
+# ========================================================
+application:
+  # ========================================================
+  # SECURITY CONFIGURATION
+  # ========================================================
+  security:
+    # JWT (JSON Web Token) Authentication Configuration
+    jwt:
+      # JWT secret key for signing and verifying tokens
+      # WARNING: MUST be changed to a strong, random value in production!
+      # Minimum recommended length: 256 bits (32 characters)
+      secret: ${JWT_SECRET:ChangeThisJWTSecretInProduction}
+
+      # Access token configuration
+      access:
+        # Access token expiration duration (ISO-8601 Duration format)
+        # Format: PT[hours]H[minutes]M[seconds]S
+        # Examples: PT15M (15 minutes), PT1H (1 hour), PT30M (30 minutes)
+        # Recommended: Short-lived (5-15 minutes) for better security
+        expiration: ${JWT_ACCESS_EXPIRATION:PT10M}
+
+      # Refresh token configuration
+      refresh:
+        # Refresh token expiration duration (ISO-8601 Duration format)
+        # Format: P[days]D or PT[hours]H
+        # Examples: P7D (7 days), P30D (30 days), PT24H (24 hours)
+        # Recommended: Longer-lived (7-30 days) to avoid frequent re-authentication
+        expiration: ${JWT_REFRESH_EXPIRATION:P7D}
+
+      # Reset password token configuration
+      reset-password:
+        # Reset password token expiration duration (ISO-8601 Duration format)
+        # Format: PT[hours]H[minutes]M
+        # Examples: PT15M (15 minutes), PT30M (30 minutes), PT1H (1 hour)
+        # Recommended: Short-lived (15-30 minutes) for security
+        expiration: ${JWT_RESET_PASSWORD_EXPIRATION:PT15M}
+
+      # JWT issuer identifier (appears in 'iss' claim)
+      # Used to identify the system that issued the token
+      issuer: ${JWT_ISSUER:TAwatch-System}
+
+  # ========================================================
+  # OAUTH2 CONFIGURATION
+  # ========================================================
+  oauth2:
+    # Frontend redirect URLs for OAuth2 authentication flow
+    redirect:
+      # Frontend URL after successful OAuth2 authentication
+      # This is where the backend redirects users after OAuth2 login completes
+      # Format: Frontend URL with OAuth2 success callback path
+      # Examples:
+      #   - http://localhost:5173/oauth2/success (local development)
+      #   - https://app.yourdomain.com/oauth2/success (production)
+      # The frontend should handle this callback to extract JWT tokens from URL parameters
+      success-url: ${OAUTH2_SUCCESS_URL:http://localhost:5173/oauth2/success}
+
+      # Frontend URL after failed OAuth2 authentication
+      # This is where the backend redirects users when OAuth2 login fails
+      # Format: Frontend URL with OAuth2 error callback path
+      # Examples:
+      #   - http://localhost:5173/oauth2/error (local development)
+      #   - https://app.yourdomain.com/oauth2/error (production)
+      # The frontend should handle this callback to display error messages
+      failure-url: ${OAUTH2_FAILURE_URL:http://localhost:5173/oauth2/error}
+
+  # ========================================================
+  # CORS (Cross-Origin Resource Sharing) CONFIGURATION
+  # ========================================================
+  cors:
+    # Allowed origins for CORS requests
+    # Format: Comma-separated list of origins (URLs)
+    # Examples:
+    #   - Single origin: https://example.com
+    #   - Multiple origins: https://example.com,https://app.example.com
+    #   - Allow all (NOT recommended in production): *
+    # WARNING: Never use '*' in production when credentials are enabled!
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://yourdomain}
+
+    # Allowed HTTP methods for CORS requests
+    # Format: Comma-separated list of HTTP methods
+    # Common methods: GET, POST, PUT, DELETE, PATCH, OPTIONS
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+
+    # Allowed headers in CORS requests
+    # Format: Comma-separated list of headers or '*' for all headers
+    # Examples: Authorization,Content-Type,X-Requested-With
+    # Note: '*' allows all headers
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+
+    # Allow credentials (cookies, authorization headers) in CORS requests
+    # Set to 'true' if frontend needs to send cookies or auth headers
+    # WARNING: When 'true', allowed-origins MUST NOT be '*'
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+
+    # Maximum age (duration) for caching CORS preflight requests
+    # Format: ISO-8601 Duration format (PT[hours]H or PT[minutes]M)
+    # Examples: PT1H (1 hour), PT30M (30 minutes)
+    # Browsers cache preflight response for this duration
+    max-age: ${CORS_MAX_AGE:PT1H}
+
+  # ========================================================
+  # CACHE CONFIGURATION
+  # ========================================================
+  cache:
+    # OTP (One-Time Password) Cache Configuration
+    # Used for storing and managing OTP codes for authentication
+    otp:
+      # Maximum number of OTP entries that can be stored in the cache
+      # Once this limit is reached, least recently used entries are evicted
+      maximum-size: ${OTP_MAXIMUM_SIZE:10000}
+
+      # Time duration after which an OTP entry expires and is automatically removed
+      # Format: ISO-8601 Duration format (PT[minutes]M or PT[seconds]S)
+      # Examples: PT5M (5 minutes), PT10M (10 minutes), PT30S (30 seconds)
+      # Recommended: 5-10 minutes for security
+      expire-after-write: ${OTP_EXPIRE_AFTER:PT5M}
+
+      # Maximum number of failed verification attempts allowed per OTP
+      # After exceeding this limit, the OTP is invalidated
+      # Recommended: 3-5 attempts to prevent brute-force attacks
+      max-attempts: ${OTP_MAX_ATTEMPTS:5}
+
+      # Initial capacity of the cache (optimization for memory allocation)
+      # Should be set based on expected concurrent OTP requests
+      initial-capacity: ${OTP_INITIAL_CAPACITY:100}
+
+      # Maximum number of times an OTP can be resent to the same user
+      # Prevents abuse and spam
+      max-resend: ${OTP_MAX_RESEND:3}
+
+      # Cooldown period between OTP resend requests
+      # Format: ISO-8601 Duration format (PT[minutes]M or PT[seconds]S)
+      # Examples: PT1M (1 minute), PT2M (2 minutes), PT30S (30 seconds)
+      # Prevents rapid resend spam
+      resend-cooldown: ${OTP_RESEND_COOLDOWN:PT1M}
 
 # ========================================================
 # SPRINGDOC OPENAPI / SWAGGER CONFIGURATION
