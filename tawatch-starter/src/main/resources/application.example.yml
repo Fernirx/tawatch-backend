@@ -294,14 +294,25 @@ application:
   # OAUTH2 CONFIGURATION
   # ========================================================
   oauth2:
-    # Frontend redirect URI after successful OAuth2 authentication
-    # This is where the backend redirects users after OAuth2 login completes
-    # Format: Frontend URL with OAuth2 success callback path
-    # Examples:
-    #   - http://localhost:5173/oauth2/success (local development)
-    #   - https://app.yourdomain.com/oauth2/success (production)
-    # The frontend should handle this callback to extract JWT tokens from URL parameters
-    redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:5173/oauth2/success}
+    # Frontend redirect URLs for OAuth2 authentication flow
+    redirect:
+      # Frontend URL after successful OAuth2 authentication
+      # This is where the backend redirects users after OAuth2 login completes
+      # Format: Frontend URL with OAuth2 success callback path
+      # Examples:
+      #   - http://localhost:5173/oauth2/success (local development)
+      #   - https://app.yourdomain.com/oauth2/success (production)
+      # The frontend should handle this callback to extract JWT tokens from URL parameters
+      success-url: ${OAUTH2_SUCCESS_URL:http://localhost:5173/oauth2/success}
+
+      # Frontend URL after failed OAuth2 authentication
+      # This is where the backend redirects users when OAuth2 login fails
+      # Format: Frontend URL with OAuth2 error callback path
+      # Examples:
+      #   - http://localhost:5173/oauth2/error (local development)
+      #   - https://app.yourdomain.com/oauth2/error (production)
+      # The frontend should handle this callback to display error messages
+      failure-url: ${OAUTH2_FAILURE_URL:http://localhost:5173/oauth2/error}
 
   # ========================================================
   # CORS (Cross-Origin Resource Sharing) CONFIGURATION

@@ -56,7 +56,8 @@ services:
       # === OAuth2 Google Configuration ===
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
+      OAUTH2_SUCCESS_URL: ${OAUTH2_SUCCESS_URL}
+      OAUTH2_FAILURE_URL: ${OAUTH2_FAILURE_URL}
 
       # === JPA / Hibernate Settings ===
       JPA_SHOW_SQL: ${JPA_SHOW_SQL}
