@@ -117,6 +117,40 @@ spring:
       mail.smtp.write-timeout: ${MAIL_WRITE_TIMEOUT:5000}
 
   # ========================================================
+  # SPRING SECURITY OAUTH2 CONFIGURATION
+  # ========================================================
+  security:
+    oauth2:
+      client:
+        # OAuth2 client registrations for social login
+        registration:
+          # Google OAuth2 Configuration
+          google:
+            # OAuth2 Client ID from Google Cloud Console
+            # How to get:
+            #   1. Go to https://console.cloud.google.com/
+            #   2. Create a project or select existing project
+            #   3. Navigate to "APIs & Services" > "Credentials"
+            #   4. Create OAuth 2.0 Client ID (Web application)
+            #   5. Add authorized redirect URIs:
+            #      - http://localhost:8080/login/oauth2/code/google (development)
+            #      - https://yourdomain.com/api/tawatch/login/oauth2/code/google (production)
+            # WARNING: Keep this confidential, never commit to version control!
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+
+            # OAuth2 Client Secret from Google Cloud Console
+            # WARNING: This is sensitive data! Use environment variables in production!
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+
+            # OAuth2 scopes requested from Google
+            # - profile: Basic profile information (name, picture)
+            # - email: User's email address
+            # Additional scopes: openid (for OpenID Connect)
+            scope:
+              - profile
+              - email
+
+  # ========================================================
   # JPA / HIBERNATE CONFIGURATION
   # ========================================================
   jpa:

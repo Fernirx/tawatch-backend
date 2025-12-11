@@ -53,6 +53,10 @@ services:
       MAIL_TIMEOUT: ${MAIL_TIMEOUT}
       MAIL_WRITE_TIMEOUT: ${MAIL_WRITE_TIMEOUT}
 
+      # === OAuth2 Google Configuration ===
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
       # === JPA / Hibernate Settings ===
       JPA_SHOW_SQL: ${JPA_SHOW_SQL}
       HIBERNATE_DIALECT: ${HIBERNATE_DIALECT}
