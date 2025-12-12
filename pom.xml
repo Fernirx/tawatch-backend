@@ -51,6 +51,7 @@
 
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <cloudinary.version>1.39.0</cloudinary.version>
 
         <!-- Cache -->
         <caffeine.version>3.2.2</caffeine.version>
@@ -139,6 +140,13 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- Cloudinary -->
+            <dependency>
+                <groupId>com.cloudinary</groupId>
+                <artifactId>cloudinary-http44</artifactId>
+                <version>${cloudinary.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
