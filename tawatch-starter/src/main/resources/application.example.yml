@@ -385,6 +385,47 @@ application:
       # Prevents rapid resend spam
       resend-cooldown: ${OTP_RESEND_COOLDOWN:PT1M}
 
+  # ========================================================
+  # FILE STORAGE CONFIGURATION
+  # ========================================================
+  storage:
+    # Cloudinary Cloud Storage Configuration
+    # Used for storing and managing user avatars and other media files
+    cloudinary:
+      # Cloudinary cloud name (unique identifier for your Cloudinary account)
+      # How to get:
+      #   1. Go to https://cloudinary.com/
+      #   2. Sign up or log in to your account
+      #   3. Navigate to Dashboard
+      #   4. Find your cloud name in the "Account Details" section
+      # WARNING: Keep this confidential, never commit to version control!
+      cloud-name: ${CLOUDINARY_CLOUD_NAME:your_cloud_name}
+
+      # Cloudinary API Key for authentication
+      # Found in the same "Account Details" section on your Cloudinary Dashboard
+      # WARNING: This is sensitive data! Use environment variables in production!
+      api-key: ${CLOUDINARY_API_KEY:your_api_key}
+
+      # Cloudinary API Secret for secure authentication
+      # Found in the same "Account Details" section on your Cloudinary Dashboard
+      # WARNING: This is highly sensitive data! Never expose this publicly!
+      api-secret: ${CLOUDINARY_API_SECRET:your_api_secret}
+
+      # Folder paths for organizing different types of files in Cloudinary
+      # Each folder is used for specific content types to maintain organization
+      folder:
+        # Folder path for user profile avatars
+        avatars: ${CLOUDINARY_FOLDER_AVATARS:tawatch/avatars}
+
+        # Folder path for product images
+        products: ${CLOUDINARY_FOLDER_PRODUCTS:tawatch/products}
+
+        # Folder path for brand images (logos, brand assets)
+        brand: ${CLOUDINARY_FOLDER_BRAND:tawatch/brand}
+
+        # Folder path for category images
+        categories: ${CLOUDINARY_FOLDER_CATEGORIES:tawatch/categories}
+
 # ========================================================
 # SPRINGDOC OPENAPI / SWAGGER CONFIGURATION
 # ========================================================
